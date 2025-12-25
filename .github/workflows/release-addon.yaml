@@ -1,0 +1,44 @@
+name: Build Blender Add-on
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed 
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Install Blender
+        uses: bradyajohnston/setup-blender@v3
+        with:
+          version: "4.5"
+
+      - name: Build Blender add-on
+        run: |
+          rm -rf builds
+          mkdir -p builds
+          blender --command extension build --source-dir . --output-dir builds/ --verbose
+          echo "Build contents:"
+          ls -lh builds/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: blender-build
+          path: builds/
+          
+  deploy:
+    needs: build
+    uses: ./.github/workflows/push-to-another-repo.yaml
+    with:
+      directory: builds
+    secrets:
+      PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}

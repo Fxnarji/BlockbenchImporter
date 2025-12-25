@@ -1,0 +1,31 @@
+schema_version = "1.0.0"
+
+id = "your_repo_name"
+version = "1.1.0"
+name = "FX Basic Extension Template"
+tagline = "A basic Extension Template to help you get started"
+maintainer = "your-mail@here.com"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+
+license = [
+  "SPDX:GPL-3.0-or-later",
+]
+
+[permissions]
+# network = "Need to sync motion-capture data to server"
+# files = "Import/export FBX from/to disk"
+# clipboard = "Copy and paste bone transforms"
+
+[build]
+paths_exclude_pattern = [
+  "builds/*",
+  ".git/*",
+  ".github/*",
+  "__pycache__/*",
+  "*.pyc",
+  "*.blend1",
+  "*.tar.xz",
+  "*.zip",
+]

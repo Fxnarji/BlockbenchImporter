@@ -1,0 +1,62 @@
+
+name: Push to Another Repository
+env:
+
+  # replace this with target repository suffix. https://github.com/{REPOSITORY}
+  REPOSITORY: ${{ github.actor }}/extensions
+on:
+  workflow_dispatch:
+    inputs:
+      directory:
+        required: true
+        default: docs
+  workflow_call:
+    inputs:
+      directory:
+        required: true
+        type: string
+    secrets:
+      PUSH_TOKEN:
+        required: true
+
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: blender-build
+          path: ${{ inputs.directory }}
+
+      - name: Prepare and push to target repo
+        env:
+          DIRECTORY: ${{ inputs.directory }}
+          TOKEN: ${{ secrets.PUSH_TOKEN }}
+        run: |
+          mkdir temp_push
+          cd temp_push
+          git clone https://x-access-token:${TOKEN}@github.com/${REPOSITORY}.git .
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git checkout main
+
+          NEW_FILE="$(ls "$GITHUB_WORKSPACE/$DIRECTORY")"
+          NEW_BASENAME="$(basename "$NEW_FILE")"
+          ADDON_NAME="$(echo "$NEW_BASENAME" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+\.zip$//')"
+
+          echo "Found new build: $NEW_BASENAME"
+          echo "Detected addon name: $ADDON_NAME"
+
+          # Remove previous versions
+          rm -f $(ls | grep -E "^${ADDON_NAME}-[0-9]+\.[0-9]+\.[0-9]+\.zip$") || true
+
+          # Copy new build
+          cp "$GITHUB_WORKSPACE/$DIRECTORY/$NEW_BASENAME" .
+
+          git add .
+          git commit -m "Update $NEW_BASENAME" || echo "No changes to commit"
+          git push origin main

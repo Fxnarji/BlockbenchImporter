@@ -1,0 +1,23 @@
+{
+  "version": "v1",
+  "blocklist": [],
+  "data": [
+    {
+      "schema_version": "1.0.0",
+      "id": "your_repo_name",
+      "name": "FX Basic Extension Template",
+      "tagline": "A basic Extension Template to help you get started",
+      "version": "1.0.9",
+      "type": "add-on",
+      "maintainer": "your-mail@here.com",
+      "license": [
+        "SPDX:GPL-3.0-or-later"
+      ],
+      "blender_version_min": "4.2.0",
+      "permissions": {},
+      "archive_url": "./your_repo_name-1.0.9.zip",
+      "archive_size": 14864,
+      "archive_hash": "sha256:8c52d11f1efe71fef4425342a0a2f81d7e0c394e2f5f60ce7dcbd10084633d86"
+    }
+  ]
+}
