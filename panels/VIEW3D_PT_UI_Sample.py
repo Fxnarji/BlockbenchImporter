@@ -10,10 +10,5 @@ class VIEW3D_PT_UI_Sample(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        box = layout.box()
-        box.label(text="you can give me a name!", icon="OUTLINER_DATA_LIGHT")
-        box.operator(OBJECT_OT_Sample.bl_idname, text="example operator", icon="BLENDER")
+        layout.operator(OBJECT_OT_Sample.bl_idname, text="example operator", icon="BLENDER")
 
-        row = layout.row()
-        row.active = False
-        row.label(text="made by Fxnarji", icon="SHADERFX")
