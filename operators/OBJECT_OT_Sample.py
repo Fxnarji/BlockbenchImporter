@@ -23,7 +23,7 @@ class OBJECT_OT_Sample(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        path = Path("/home/fxnarji/Github/BlockbenchImporter/test_data/Test3.blockymodel")
+        path = Path("/home/fxnarji/Github/BlockbenchImporter/test_data/Iron.blockymodel")
         with open(path, "r", encoding="utf-8") as f:
             data = json.load(f)
             parent = bpy.data.objects.new(str(path.name.split('.')[0]), None)
@@ -259,7 +259,6 @@ def name_face_by_normal(normal):
     else:  # Z is dominant
         return "back" if z > 0 else "front"
 
-
 def create_box_v2(name, shape):
     mesh = bpy.data.meshes.new(name)
 
@@ -294,47 +293,95 @@ def create_box_v2(name, shape):
     uv_layer = mesh.uv_layers.new(name="UVMap")
     uvs = uv_layer.data
 
-    tex_width = 32
+    tex_width = 64
     tex_height = 32
     texture_layout = shape.get("textureLayout", {})
+
+    Cardinal_local_remap = {
+        "east": "right",
+        "west": "left",
+        "down": "bottom",
+        "up": "top",
+        "north": "back",
+        "south": "front",
+    }
 
     # one face = 4 loops
     for face_index in range(len(FACE_ORDER)):
         face_name = FACE_ORDER[face_index]
+        face_name = Cardinal_local_remap[face_name]
 
         index = face_index * 4
-
         if face_name not in texture_layout:
             continue
 
         offset = texture_layout[face_name]["offset"]
 
         # derive face pixel size from box dimensions
-        if face_name in ("north", "south"):
-            face_w, face_h = sx, sy
-        elif face_name in ("east", "west"):
-            face_w, face_h = sz, sy
-        else:  # up / down
-            face_w, face_h = sx, sz
+        if face_name == "front": 
+            face_w, face_h = sy, sx
 
-        ox = offset["x"]
-        oy = offset["y"]
+        if face_name  == "back":
+            face_w, face_h = sx, sy
+
+        elif face_name in ("left", "right"):
+            face_w, face_h = sz, sy
+
+        elif face_name in ("top", "bottom"):
+            face_w, face_h = sz, sx
+        
+        offset_x = offset["x"]
+        offset_y = offset["y"]
 
         # Blockbench-style conversion (top-left origin)
         top_left = (
-            ox / tex_width,
-            1.0 - oy / tex_height
+            offset_x / tex_width,
+            1.0 - offset_y / tex_height
         )
         bottom_right = (
-            (ox + face_w) / tex_width,
-            1.0 - (oy + face_h) / tex_height
+            (offset_x + face_w) / tex_width,
+            1.0 - (offset_y + face_h) / tex_height
         )
 
-        uvs[index].uv     = (top_left[0], bottom_right[1])
+        uvs[index + 0].uv = (top_left[0], bottom_right[1])
         uvs[index + 1].uv = top_left
         uvs[index + 2].uv = (bottom_right[0], top_left[1])
         uvs[index + 3].uv = bottom_right
 
+
+
+    mesh.materials.append(bpy.data.materials.get("Material.001"))
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
     return obj
+
+{'top': 
+    {'offset': {'x': 110, 'y': 0}, 
+    'mirror': {'x': False, 'y': False}, 
+    'angle': 0}, 
+
+'bottom': 
+    {'offset': {'x': 110, 'y': 44}, 
+    'mirror': {'x': False, 'y': False}, 
+    'angle': 0}, 
+
+'front': 
+    {'offset': {'x': 110, 'y': 29}, 
+    'mirror': {'x': False, 'y': False}, 
+    'angle': 0}, 
+
+'back': 
+    {'offset': 
+    {'x': 110, 'y': 29}, 
+    'mirror': {'x': False, 'y': False}, 
+    'angle': 0},
+
+'left': 
+    {'offset': {'x': 44, 'y': 74}, 
+    'mirror': {'x': True, 'y': False}, 
+    'angle': 0}, 
+
+'right': 
+    {'offset': {'x': 15, 'y': 74}, 
+    'mirror': {'x': False, 'y': False}, 
+    'angle': 0}}
